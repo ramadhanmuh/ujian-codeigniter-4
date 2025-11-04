@@ -26,7 +26,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
     />
-    <title><?= esc($application['name']) ?> - Admin - <?= $this->renderSection('page_title') ?></title>
+    <title><?= esc($application['name']) ?> - Guru - <?= $this->renderSection('page_title') ?></title>
 
     <?= $this->include('teacher/style') ?>
   </head>
@@ -68,5 +68,7 @@
     <!-- / Layout wrapper -->
 
     <?= $this->include('teacher/script') ?>
+
+    <?= $this->renderSection('additional_script') ?>
   </body>
 </html>

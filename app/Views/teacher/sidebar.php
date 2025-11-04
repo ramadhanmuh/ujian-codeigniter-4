@@ -20,7 +20,7 @@
         </li>
 
         <li class="menu-item <?= active_menu('guru/soal') ?>">
-            <a href="<?= url_to('admin.exams.index') ?>" class="menu-link">
+            <a href="<?= url_to('teacher.questions.index') ?>" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-book"></i>
                 <div>Soal</div>
             </a>

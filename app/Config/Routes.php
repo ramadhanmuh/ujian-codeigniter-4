@@ -84,6 +84,16 @@ $routes->group('guru', ['filter' => 'rolecheck:teacher'], static function ($rout
         $routes->get('/', 'Teacher\ChangePassword::edit', ['as' => 'teacher.change-password.edit']);
         $routes->post('/', 'Teacher\ChangePassword::update', ['as' => 'teacher.change-password.update']);
     });
+
+    $routes->group('soal', static function ($routes) {
+        $routes->get('/', 'Teacher\Question::index', ['as' => 'teacher.questions.index']);
+        $routes->get('list', 'Teacher\Question::list', ['as' => 'teacher.questions.list']);
+        $routes->get('tambah', 'Teacher\Question::create', ['as' => 'teacher.questions.create']);
+        $routes->post('tambah', 'Teacher\Question::store', ['as' => 'teacher.questions.store']);
+        $routes->get('(:segment)/ubah', 'Teacher\Question::edit/$1', ['as' => 'teacher.questions.edit']);
+        $routes->post('(:segment)/ubah', 'Teacher\Question::update/$1', ['as' => 'teacher.questions.update']);
+        $routes->post('(:segment)/hapus', 'Teacher\Question::delete/$1', ['as' => 'teacher.questions.delete']);
+    });
 });
 
 $routes->set404Override('App\Controllers\Error::show404');

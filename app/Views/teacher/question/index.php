@@ -40,7 +40,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-xl-4">
+                            <div class="col-xl-4 mb-2 mb-xl-0">
                                 <label for="order" class="form-label">
                                     Sortir
                                 </label>
@@ -53,7 +53,7 @@
                                     </option>
                                 </select>
                             </div>
-                            <div class="col-xl-4">
+                            <div class="col-xl-4 mb-2 mb-xl-0">
                                 <label for="exam_id" class="form-label">
                                     Ujian
                                 </label>
@@ -104,11 +104,17 @@
                             </div>
                         </div>
                     </div>
-                    <div
-                        class="card-body py-2"
-                        id="question-list-column"
-                        data-url="<?= url_to('teacher.questions.list') ?>"
-                    >
+                    <div class="card-body py-2">
+                        <div class="row">
+                            <div
+                                class="col-12 mb-3"
+                                id="question-list-column"
+                                data-url="<?= url_to('teacher.questions.list') ?>"
+                            >
+                                
+                            </div>
+                            <div class="col-md-auto mb-2 mb-md-0" id="question-total-column"></div>
+                        </div>
                     </div>
                     <div
                         class="position-absolute bg-white w-100 start-0 top-0 h-100 d-flex justify-content-center align-items-center"

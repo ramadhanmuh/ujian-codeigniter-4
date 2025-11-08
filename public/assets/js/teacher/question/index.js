@@ -162,9 +162,11 @@ $(document).ready(function () {
 
     var direction = $('#order').find(':selected').data('direction')
 
-    var examId = $('#exam_id').find(':selected').val();
+    var examId = $('#exam_id').find(':selected').val()
     
-    var keyword = $('#keyword').val();
+    var keyword = $('#keyword').val()
+
+    var page = 1
     
     function getData() {
         $.ajax({
@@ -174,7 +176,8 @@ $(document).ready(function () {
                 orderBy: orderBy,
                 direction: direction,
                 exam_id: examId,
-                keyword: keyword
+                keyword: keyword,
+                page: page
             },
             dataType: 'json',
             success: function (response) {                
@@ -183,11 +186,12 @@ $(document).ready(function () {
 
                 if (response.records.length === 0) {
                     $('#question-list-column').html('<div class="text-center">Data tidak ditemukan.<div>')
+                    $('#question-total-column').text('Total : 0')
                 } else {
                     var questionHTML = ''
 
                     $.each(response.records, function (index, value) {
-                        questionHTML += '<div class="row">'
+                        questionHTML += '<div class="row mb-3">'
                         questionHTML +=     '<div class="col-auto">'
                         questionHTML +=         value.number + '.'
                         questionHTML +=     '</div>'
@@ -226,41 +230,43 @@ $(document).ready(function () {
                         questionHTML +=         '</div>'
                         questionHTML +=     '</div>'
 
-                        questionHTML +=     '<div class="col-auto">'
-                        questionHTML +=         '<div class="btn-group">'
-                        questionHTML +=             '<button'
-                        questionHTML +=                     ' type="button"'
-                        questionHTML +=                     ' class="btn btn-outline-primary btn-icon rounded-pill dropdown-toggle hide-arrow"'
-                        questionHTML +=                     ' data-bs-toggle="dropdown"'
-                        questionHTML +=              '>'
-                        questionHTML +=                 '<i class="bx bx-dots-vertical-rounded"></i>'
-                        questionHTML +=             '</button>'
-                        questionHTML +=             '<ul class="dropdown-menu dropdown-menu-end">'
-                        questionHTML +=                 '<li>'
-                        questionHTML +=                     '<a'
-                        questionHTML +=                         ' class="dropdown-item"'
-                        questionHTML +=                         ' href="' + value.edit_link + '"'
-                        questionHTML +=                     '>'
-                        questionHTML +=                         'Ubah'
-                        questionHTML +=                     '</a>'
-                        questionHTML +=                 '</li>'
-                        questionHTML +=                 '<li>'
-                        questionHTML +=                     '<form'
-                        questionHTML +=                         ' method="POST"'
-                        questionHTML +=                         ' action="' + value.delete_link + '"'
-                        questionHTML +=                     '>'
-                        questionHTML +=                         value.csrf
-                        questionHTML +=                         '<button'
-                        questionHTML +=                                 ' class="dropdown-item"'
-                        questionHTML +=                                 ' type="submit"'
-                        questionHTML +=                          '>'
-                        questionHTML +=                             'Hapus'
-                        questionHTML +=                          '</button>'
-                        questionHTML +=                     '</form>'
-                        questionHTML +=                 '</li>'
-                        questionHTML +=             '</ul>'
-                        questionHTML +=         '</div>'
-                        questionHTML +=     '</div>'
+                        if (value.csrf !== undefined) {
+                          questionHTML +=     '<div class="col-auto">'
+                          questionHTML +=         '<div class="btn-group">'
+                          questionHTML +=             '<button'
+                          questionHTML +=                     ' type="button"'
+                          questionHTML +=                     ' class="btn btn-outline-primary btn-icon rounded-pill dropdown-toggle hide-arrow"'
+                          questionHTML +=                     ' data-bs-toggle="dropdown"'
+                          questionHTML +=              '>'
+                          questionHTML +=                 '<i class="bx bx-dots-vertical-rounded"></i>'
+                          questionHTML +=             '</button>'
+                          questionHTML +=             '<ul class="dropdown-menu dropdown-menu-end">'
+                          questionHTML +=                 '<li>'
+                          questionHTML +=                     '<a'
+                          questionHTML +=                         ' class="dropdown-item"'
+                          questionHTML +=                         ' href="' + value.edit_link + '"'
+                          questionHTML +=                     '>'
+                          questionHTML +=                         'Ubah'
+                          questionHTML +=                     '</a>'
+                          questionHTML +=                 '</li>'
+                          questionHTML +=                 '<li>'
+                          questionHTML +=                     '<form'
+                          questionHTML +=                         ' method="POST"'
+                          questionHTML +=                         ' action="' + value.delete_link + '"'
+                          questionHTML +=                     '>'
+                          questionHTML +=                         value.csrf
+                          questionHTML +=                         '<button'
+                          questionHTML +=                                 ' class="dropdown-item"'
+                          questionHTML +=                                 ' type="submit"'
+                          questionHTML +=                          '>'
+                          questionHTML +=                             'Hapus'
+                          questionHTML +=                          '</button>'
+                          questionHTML +=                     '</form>'
+                          questionHTML +=                 '</li>'
+                          questionHTML +=             '</ul>'
+                          questionHTML +=         '</div>'
+                          questionHTML +=     '</div>'
+                        }
 
                         questionHTML += '</div>'
                     })               
@@ -269,9 +275,11 @@ $(document).ready(function () {
 
                     $('#question-total-column').text('Total : ' + response.total)
 
+                    $('#question-pagination-column').remove()
+
                     var paginationHTML = ''
 
-                    paginationHTML += '<div class="col-md">'
+                    paginationHTML += '<div class="col-md" id="question-pagination-column">'
 
                     paginationHTML +=   '<nav>'
 
@@ -282,7 +290,7 @@ $(document).ready(function () {
                         var liClass = 'page-item'
 
                         if (value.secondary !== undefined) {
-                            liClass += ' d-none d-md-line'
+                            liClass += ' d-none d-md-inline'
                         }
 
                         if (value.previous !== undefined) {
@@ -307,7 +315,7 @@ $(document).ready(function () {
 
                         paginationHTML += '<li class="'+ liClass +'">'
 
-                        paginationHTML +=   '<a href="" class="page-link" data-keyword="' + value.keyword + '" data-orderBy="' + value.orderBy + '" data-direction="' + value.direction + '">'
+                        paginationHTML +=   '<a href="" class="page-link" data-keyword="' + value.keyword + '" data-orderby="' + value.orderBy + '" data-direction="' + value.direction + '" data-page="' + value.page + '" data-examid="'+ value.examId +'">'
 
                         paginationHTML +=       value.text
 
@@ -342,10 +350,80 @@ $(document).ready(function () {
 
     getData()
 
+    $('#order').change(function () {
+        page = 1
+
+        orderBy = $(this).find(':selected').data('order')
+        direction = $(this).find(':selected').data('direction')
+
+        $('#loader').addClass('d-flex')
+        $('#loader').removeClass('d-none')
+
+        $('#question-pagination-column').remove()
+
+        getData()
+    })
+
+    $('#exam_id').change(function () {
+        page = 1
+        
+        examId = $(this).find(':selected').val()
+
+        $('#loader').addClass('d-flex')
+        $('#loader').removeClass('d-none')
+
+        $('#question-pagination-column').remove()
+
+        getData()
+    })
+
+    $('#searchForm').submit(function (event) {
+      event.preventDefault()
+
+      keyword = $('#keyword').val()
+
+      $('#loader').addClass('d-flex')
+      $('#loader').removeClass('d-none')
+
+      $('#question-pagination-column').remove()
+
+      getData()
+    })
+
     $(document).on('click', '.page-link', function (event) {
         event.preventDefault()
 
-        console.log($(this));
-        
+        keyword = $(this).data('keyword')
+        direction = $(this).data('direction')
+        page = $(this).data('page')
+        orderBy = $(this).data('orderby')
+        examId = $(this).data('examid')
+
+        if (keyword === 'undefined') {
+            keyword = ''
+        }
+
+        if (direction === 'undefined') {
+            direction = ''
+        }
+
+        if (page === 'undefined') {
+            page = ''
+        }
+
+        if (orderBy === 'undefined') {
+            orderBy = ''
+        }
+
+        if (examId === 'undefined') {
+            examId = ''
+        }
+
+        $('#loader').addClass('d-flex')
+        $('#loader').removeClass('d-none')
+
+        $('#question-pagination-column').remove()
+
+        getData()
     })
 })

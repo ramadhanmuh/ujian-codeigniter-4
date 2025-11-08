@@ -30,13 +30,13 @@ class Question extends BaseController
 
         $direction = $this->request->getGet('direction');
 
-        if ($direction !== 'ASC' || $direction !== 'DESC') {
+        if ($direction !== 'ASC' && $direction !== 'DESC') {
             $direction = 'ASC';
         }
 
         $keyword = strval($this->request->getGet('keyword'));
 
-        $exam_id = strval($this->request->getGet('exam_id'));
+        $examId = strval($this->request->getGet('exam_id'));
 
         $response['page'] = intval($this->request->getGet('page'));
 
@@ -52,7 +52,7 @@ class Question extends BaseController
 
         $response['records'] = $questionModel->select(
             'id, text, option_a, option_b, option_c, option_d, correct_answer'
-        )->where('exam_id', $exam_id);
+        )->where('exam_id', $examId);
 
         if ($keyword !== '') {
             $response['records'] = $response['records']->groupStart()
@@ -68,25 +68,35 @@ class Question extends BaseController
                                                     ->findAll($limit, $offset);
 
         if (!empty($response['records'])) {
+            $examModel = model('ExamModel');
+
+            $exam = $examModel->select('id')
+                                ->where('id', $examId)
+                                ->where('start_time >', time())
+                                ->first();
+
             foreach ($response['records'] as $key => $value) {
                 $offset++;
 
                 $response['records'][$key]['number'] = $offset;
+
+                if ($exam !== null) {
+                    $response['records'][$key]['edit_link'] = url_to(
+                        'teacher.questions.edit', $value['id']
+                    );
+    
+                    $response['records'][$key]['delete_link'] = url_to(
+                        'teacher.questions.delete', $value['id']
+                    );
+    
+                    $response['records'][$key]['csrf'] = csrf_field();
+                }
                 
-                $response['records'][$key]['edit_link'] = url_to(
-                    'teacher.questions.edit', $value['id']
-                );
-
-                $response['records'][$key]['delete_link'] = url_to(
-                    'teacher.questions.delete', $value['id']
-                );
-
-                $response['records'][$key]['csrf'] = csrf_field();
             }
         }
 
         $response['total'] = $questionModel->select('id')
-                                ->where('exam_id', $exam_id);
+                                ->where('exam_id', $examId);
 
         if ($keyword !== '') {
             $response['total'] = $response['total']->groupStart()
@@ -120,7 +130,7 @@ class Question extends BaseController
             if ($response['page'] < 2) {
                 $response['pageItems'][] = [
                     'text' => '1',
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $response['page'],
+                    'page' => $response['page'],
                     'active' => 1
                 ];
     
@@ -132,12 +142,12 @@ class Question extends BaseController
                     if ($i === $nextPage || $i === $nextPage + 1) {
                         $response['pageItems'][] = [
                             'text' => $i,
-                            'link' => url_to('admin.exams.index') . '?halaman=' . $i,
+                            'page' => $i,
                         ];
                     } else {
                         $response['pageItems'][] = [
                             'text' => $i,
-                            'link' => url_to('admin.exams.index') . '?halaman=' . $i,
+                            'page' => $i,
                             'secondary' => 1,
                         ];
                     }
@@ -146,42 +156,42 @@ class Question extends BaseController
                 if ($totalPages > 1) {
                     $response['pageItems'][] = [
                         'text' => '<i class="tf-icon bx bx-chevron-right"></i>',
-                        'link' => url_to('admin.exams.index') . '?halaman=' . $response['page'] + 1,
+                        'page' => $response['page'] + 1,
                         'next' => 1
                     ];
         
                     $response['pageItems'][] = [
                         'text' => '<i class="tf-icon bx bx-chevrons-right"></i>',
-                        'link' => url_to('admin.exams.index') . '?halaman=' . $totalPages,
+                        'page' => $totalPages,
                         'last' => 1
                     ];
                 }
 
-                $response['pageItems'] = $this->addParametersToPageItems(
+                $response['pageItems'] = $this->addOptionsToPageItem(
                     $response['pageItems'], $keyword,
-                    $orderBy, $direction
+                    $orderBy, $direction, $examId
                 );
             } else if ($response['page'] === 2) {
                 $response['pageItems'][] = [
                     'text' => '<i class="tf-icon bx bx-chevrons-left"></i>',
-                    'link' => url_to('admin.exams.index') . '?halaman=1',
+                    'page' => url_to('admin.exams.index') . '?halaman=1',
                     'first' => 1,
                 ];
     
                 $response['pageItems'][] = [
                     'text' => '<i class="tf-icon bx bx-chevron-left"></i>',
-                    'link' => url_to('admin.exams.index') . '?halaman=1',
+                    'page' => url_to('admin.exams.index') . '?halaman=1',
                     'previous' => 1,
                 ];
     
                 $response['pageItems'][] = [
                     'text' => '1',
-                    'link' => url_to('admin.exams.index') . '?halaman=1',
+                    'page' => url_to('admin.exams.index') . '?halaman=1',
                 ];
     
                 $response['pageItems'][] = [
                     'text' => '2',
-                    'link' => url_to('admin.exams.index') . '?halaman=2',
+                    'page' => url_to('admin.exams.index') . '?halaman=2',
                     'active' => 1,
                 ];
     
@@ -193,12 +203,12 @@ class Question extends BaseController
                     if ($i === $nextPage) {
                         $response['pageItems'][] = [
                             'text' => $i,
-                            'link' => url_to('admin.exams.index') . '?halaman=' . $i,
+                            'page' => $i,
                         ];
                     } else {
                         $response['pageItems'][] = [
                             'text' => $i,
-                            'link' => url_to('admin.exams.index') . '?halaman=' . $i,
+                            'page' => $i,
                             'secondary' => 1,
                         ];
                     }
@@ -208,31 +218,31 @@ class Question extends BaseController
                 if ($response['page'] !== $totalPages) {
                      $response['pageItems'][] = [
                         'text' => '<i class="tf-icon bx bx-chevron-right"></i>',
-                        'link' => url_to('admin.exams.index') . '?halaman=' . $response['page'] + 1,
+                        'page' => $response['page'] + 1,
                         'next' => 1
                     ];
     
                     $response['pageItems'][] = [
                         'text' => '<i class="tf-icon bx bx-chevrons-right"></i>',
-                        'link' => url_to('admin.exams.index') . '?halaman=' . $totalPages,
+                        'page' => $totalPages,
                         'last' => 1
                     ];
                 }
     
-                $response['pageItems'] = $this->addParametersToPageItems(
+                $response['pageItems'] = $this->addOptionsToPageItem(
                     $response['pageItems'], $keyword,
-                    $orderBy, $direction
+                    $orderBy, $direction, $examId
                 );
             } else if ($response['page'] === $totalPages - 1) {
                 $response['pageItems'][] = [
                     'text' => '<i class="tf-icon bx bx-chevrons-left"></i>',
-                    'link' => url_to('admin.exams.index') . '?halaman=1',
+                    'page' => url_to('admin.exams.index') . '?halaman=1',
                     'first' => 1,
                 ];
     
                 $response['pageItems'][] = [
                     'text' => '<i class="tf-icon bx bx-chevron-left"></i>',
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $previousPage,
+                    'page' => $previousPage,
                     'previous' => 1,
                 ];
     
@@ -240,52 +250,52 @@ class Question extends BaseController
     
                 $response['pageItems'][] = [
                     'text' => $secondBeforePage,
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $secondBeforePage,
+                    'page' => $secondBeforePage,
                     'secondary' => 1,
                 ];
     
                 $response['pageItems'][] = [
                     'text' => $previousPage,
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $previousPage,
+                    'page' => $previousPage,
                 ];
     
                 $response['pageItems'][] = [
                     'text' => $response['page'],
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $response['page'],
+                    'page' => $response['page'],
                     'active' => 1,
                 ];
     
                 $response['pageItems'][] = [
                     'text' => $nextPage,
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $nextPage,
+                    'page' => $nextPage,
                 ];
     
                 $response['pageItems'][] = [
                     'text' => '<i class="tf-icon bx bx-chevron-right"></i>',
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $nextPage,
+                    'page' => $nextPage,
                     'next' => 1
                 ];
     
                 $response['pageItems'][] = [
                     'text' => '<i class="tf-icon bx bx-chevrons-right"></i>',
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $totalPages,
+                    'page' => $totalPages,
                     'last' => 1
                 ];
     
-               $response['pageItems'] = $this->addParametersToPageItems(
+               $response['pageItems'] = $this->addOptionsToPageItem(
                     $response['pageItems'], $keyword,
-                    $orderBy, $direction
+                    $orderBy, $direction, $examId
                 );
             } else if ($response['page'] === $totalPages) {
                 $response['pageItems'][] = [
                     'text' => '<i class="tf-icon bx bx-chevrons-left"></i>',
-                    'link' => url_to('admin.exams.index') . '?halaman=1',
+                    'page' => url_to('admin.exams.index') . '?halaman=1',
                     'first' => 1,
                 ];
     
                 $response['pageItems'][] = [
                     'text' => '<i class="tf-icon bx bx-chevron-left"></i>',
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $previousPage,
+                    'page' => $previousPage,
                     'previous' => 1,
                 ];
     
@@ -293,35 +303,35 @@ class Question extends BaseController
     
                 $response['pageItems'][] = [
                     'text' => $secondBeforePage,
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $secondBeforePage,
+                    'page' => $secondBeforePage,
                     'secondary' => 1,
                 ];
     
                 $response['pageItems'][] = [
                     'text' => $previousPage,
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $previousPage,
+                    'page' => $previousPage,
                 ];
     
                 $response['pageItems'][] = [
                     'text' => $response['page'],
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $response['page'],
+                    'page' => $response['page'],
                     'active' => 1,
                 ];
     
-                $response['pageItems'] = $this->addParametersToPageItems(
+                $response['pageItems'] = $this->addOptionsToPageItem(
                     $response['pageItems'], $keyword,
-                    $orderBy, $direction
+                    $orderBy, $direction, $examId
                 );
             } else {
                 $response['pageItems'][] = [
                     'text' => '<i class="tf-icon bx bx-chevrons-left"></i>',
-                    'link' => url_to('admin.exams.index') . '?halaman=1',
+                    'page' => url_to('admin.exams.index') . '?halaman=1',
                     'first' => 1,
                 ];
     
                 $response['pageItems'][] = [
                     'text' => '<i class="tf-icon bx bx-chevron-left"></i>',
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $previousPage,
+                    'page' => $previousPage,
                     'previous' => 1,
                 ];
     
@@ -329,49 +339,49 @@ class Question extends BaseController
     
                 $response['pageItems'][] = [
                     'text' => $secondBeforePage,
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $secondBeforePage,
+                    'page' => $secondBeforePage,
                     'secondary' => 1,
                 ];
     
                 $response['pageItems'][] = [
                     'text' => $previousPage,
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $previousPage,
+                    'page' => $previousPage,
                 ];
     
                 $response['pageItems'][] = [
                     'text' => $response['page'],
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $response['page'],
+                    'page' => $response['page'],
                     'active' => 1,
                 ];
     
                 $response['pageItems'][] = [
                     'text' => $nextPage,
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $nextPage,
+                    'page' => $nextPage,
                 ];
     
                 $secondAfter = $response['page'] + 2;
     
                 $response['pageItems'][] = [
                     'text' => $secondAfter,
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $secondAfter,
+                    'page' => $secondAfter,
                     'secondary' => 1,
                 ];
     
                 $response['pageItems'][] = [
                     'text' => '<i class="tf-icon bx bx-chevron-right"></i>',
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $nextPage,
+                    'page' => $nextPage,
                     'next' => 1
                 ];
     
                 $response['pageItems'][] = [
                     'text' => '<i class="tf-icon bx bx-chevrons-right"></i>',
-                    'link' => url_to('admin.exams.index') . '?halaman=' . $totalPages,
+                    'page' => $totalPages,
                     'last' => 1
                 ];
     
-                $response['pageItems'] = $this->addParametersToPageItems(
+                $response['pageItems'] = $this->addOptionsToPageItem(
                     $response['pageItems'], $keyword,
-                    $orderBy, $direction
+                    $orderBy, $direction, $examId
                 );
             }
         }
@@ -380,7 +390,7 @@ class Question extends BaseController
                     ->setJSON($response);
     }
 
-    private function addParametersToPageItems($pageItems, $keyword, $orderBy, $direction): array
+    private function addOptionsToPageItem($pageItems, $keyword, $orderBy, $direction, $examId): array
     {
         if ($keyword !== '') {
             foreach ($pageItems as $key => $value) {
@@ -400,10 +410,17 @@ class Question extends BaseController
             }
         }
 
+        if ($examId !== '') {
+            foreach ($pageItems as $key => $value) {
+                $pageItems[$key]['examId'] = $examId;
+            }
+        }
+
         return $pageItems;
     }
 
-    public function create() {
+    public function create()
+    {
         $examId = $this->request->getGet('exam_id');
 
         $examModel = model('examModel');
@@ -424,7 +441,8 @@ class Question extends BaseController
         return view('teacher/question/create', $data);
     }
 
-    public function store() {
+    public function store()
+    {
         $examId = $this->request->getGet('exam_id');
 
         $examModel = model('examModel');
@@ -525,21 +543,136 @@ class Question extends BaseController
                     ->with('error', 'Soal tidak ditemukan.');
         }
 
-        return view('teacher.question.edit', $data);
+        $examModel = model('ExamModel');
+
+        $data['exam'] = $examModel->select('id, title')
+                            ->where('start_time >', time())
+                            ->where('id', $data['record']['exam_id'])
+                            ->first();
+
+        if ($data['exam'] === null) {
+            return redirect('teacher.questions.index')
+                    ->with('error', 'Soal tidak bisa diubah karena waktu ujian sudah berlaku.');
+        }
+
+        $applicationModel = model('ApplicationModel');
+
+        $data['application'] = $applicationModel->first();
+
+        return view('teacher/question/edit', $data);
+    }
+
+    public function update($id)
+    {
+        $questionModel = model('QuestionModel');
+
+        $question = $questionModel->limit(1)
+                                ->find($id);
+
+        if ($question === null) {
+            return redirect('teacher.questions.index')
+                    ->with('error', 'Soal tidak ditemukan.');
+        }
+
+        $examModel = model('ExamModel');
+
+        $exam = $examModel->select('id')
+                            ->where('start_time >', time())
+                            ->where('id', $question['exam_id'])
+                            ->first();
+
+        if ($exam === null) {
+            return redirect('teacher.questions.index')
+                    ->with('error', 'Soal tidak bisa diubah karena waktu ujian sudah berlaku.');
+        }
+
+         $validationRules = [
+            'text' => [
+                'label' => 'Teks Pertanyaan',
+                'rules' => [
+                    'required', 'string',
+                    'max_length[65535]'
+                ]
+            ],
+            'option_a' => [
+                'label' => 'Pilihan A',
+                'rules' => [
+                    'required', 'string',
+                    'max_length[65535]'
+                ]
+            ],
+            'option_b' => [
+                'label' => 'Pilihan B',
+                'rules' => [
+                    'required', 'string',
+                    'max_length[65535]'
+                ]
+            ],
+            'option_c' => [
+                'label' => 'Pilihan C',
+                'rules' => [
+                    'required', 'string',
+                    'max_length[65535]'
+                ]
+            ],
+            'option_d' => [
+                'label' => 'Pilihan D',
+                'rules' => [
+                    'required', 'string',
+                    'max_length[65535]'
+                ]
+            ],
+            'correct_answer' => [
+                'label' => 'Jawaban Benar',
+                'rules' => [
+                    'required',
+                    'in_list[a,b,c,d]'
+                ]
+            ],
+        ];
+
+        if (!$this->validate($validationRules)) {
+            return redirect()
+                    ->back()
+                    ->with('validationError', $this->validator->getErrors())
+                    ->withInput();
+        }
+
+        $questionModel->where('id', $id)
+                        ->set($this->validator->getValidated())
+                        ->update();
+
+        return redirect('teacher.questions.index')
+                ->with('success', 'Soal berhasil diubah.');
     }
 
     public function delete($id)
     {
         $questionModel = model('QuestionModel');
 
-        $record = $questionModel->limit(1)
+        $question = $questionModel->limit(1)
                                 ->find($id);
 
-        if ($record === null) {
+        if ($question === null) {
             return redirect('teacher.questions.index')
                     ->with('error', 'Soal tidak ditemukan.');
         }
+
+        $examModel = model('ExamModel');
+
+        $exam = $examModel->select('id')
+                            ->where('start_time >', time())
+                            ->where('id', $question['exam_id'])
+                            ->first();
+
+        if ($exam === null) {
+            return redirect('teacher.questions.index')
+                    ->with('error', 'Soal tidak bisa diubah karena waktu ujian sudah berlaku.');
+        }
+
+        $questionModel->delete($id);
         
-        return 'test';
+        return redirect('teacher.questions.index')
+                ->with('success', 'Soal berhasil dihapus.');        
     }
 }

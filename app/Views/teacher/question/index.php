@@ -70,20 +70,22 @@
                                 </select>
                             </div>
                             <div class="col-xl-4">
-                                <label for="keyword" class="form-label">
-                                    Pencarian
-                                </label>
-                                <div class="input-group">
-                                    <input
-                                        type="text"
-                                        class="form-control"
-                                        name="keyword"
-                                        id="keyword"
-                                    >
-                                    <button type="submit" class="btn btn-outline-primary">
-                                        <i class="bx bx-search"></i>
-                                    </button>
-                                </div>
+                                <form action="" method="get" id="searchForm">
+                                    <label for="keyword" class="form-label">
+                                        Pencarian
+                                    </label>
+                                    <div class="input-group">
+                                        <input
+                                            type="text"
+                                            class="form-control"
+                                            name="keyword"
+                                            id="keyword"
+                                        >
+                                        <button type="submit" class="btn btn-outline-primary">
+                                            <i class="bx bx-search"></i>
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -105,7 +107,7 @@
                         </div>
                     </div>
                     <div class="card-body py-2">
-                        <div class="row">
+                        <div class="row align-items-center">
                             <div
                                 class="col-12 mb-3"
                                 id="question-list-column"

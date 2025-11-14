@@ -32,7 +32,7 @@ class ChangePassword extends BaseController
                 ] 
             ],
             'current_password' => [
-                'label' => 'Username',
+                'label' => 'Kata Sandi Saat Ini',
                 'rules' => [
                     'required', 'string',
                     static function ($value) {
@@ -44,7 +44,10 @@ class ChangePassword extends BaseController
 
                         return password_verify($value, $data['password']);
                     }
-                ] 
+                ],
+                'errors' => [
+                    2 => '{field} harus berisi kata sandi yang digunakan saat ini.'
+                ]
             ],
         ];
 

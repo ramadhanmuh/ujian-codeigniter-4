@@ -96,4 +96,27 @@ $routes->group('guru', ['filter' => 'rolecheck:teacher'], static function ($rout
     });
 });
 
+$routes->group('murid', ['filter' => 'rolecheck:student'], static function ($routes) {
+    $routes->post('logout', 'Logout::deleteSession', ['as' => 'student.logout']);
+
+    $routes->get('beranda', 'Student\Home::index', ['as' => 'student.home.index']);
+
+    $routes->group('profil', static function ($routes) {
+        $routes->get('/', 'Student\Profile::index', ['as' => 'student.profile.index']);
+        $routes->get('ubah', 'Student\Profile::edit', ['as' => 'student.profile.edit']);
+        $routes->post('ubah', 'Student\Profile::update', ['as' => 'student.profile.update']);
+    });
+
+    $routes->group('ubah-kata-sandi', static function ($routes) {
+        $routes->get('/', 'Student\ChangePassword::edit', ['as' => 'student.change-password.edit']);
+        $routes->post('/', 'Student\ChangePassword::update', ['as' => 'student.change-password.update']);
+    });
+
+    $routes->group('mulai-ujian', static function ($routes) {
+        $routes->get('/', 'Student\StartExam::index', ['as' => 'student.start-exam.index']);
+        $routes->get('(:segment)/(:segment)', 'Student\StartExam::create/$1/$2', ['as' => 'student.start-exam.create']);
+        $routes->post('(:segment)/(:segment)', 'Student\StartExam::store/$1/$2', ['as' => 'student.start-exam.store']);
+    });
+});
+
 $routes->set404Override('App\Controllers\Error::show404');

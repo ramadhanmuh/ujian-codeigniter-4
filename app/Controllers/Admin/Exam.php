@@ -467,7 +467,7 @@ class Exam extends BaseController
                 'label' => 'Judul',
                 'rules' => [
                     'required', 'string',
-                    'max_length[255]',
+                    'max_length[100]',
                     static function (string $value, array $data, ?string &$error) use ($controller): bool {
                         $examModel = model('ExamModel');
 
@@ -477,7 +477,7 @@ class Exam extends BaseController
                                             ->first();
 
                         return $exam === null;
-                    }
+                    },
                 ],
                 'errors' => [
                     3 => 'Judul tidak bisa dipakai karena sudah dipakai dalam format ramah URL.'
@@ -487,36 +487,32 @@ class Exam extends BaseController
                 'label' => 'Waktu Mulai',
                 'rules' => [
                     'required', 'string',
-                    static function ($value) {
+                    static function (string $value, array $data, ?string &$error): bool {
                         $format = 'Y-m-d\TH:i';
 
                         $d = \DateTime::createFromFormat($format, $value);
 
                         return $d && $d->format($format) === $value;
+                    },
+                    static function ($value): bool {
+                        $timeValue = strtotime($value);
+
+                        $examModel = model('ExamModel');
+
+                        $exam = $examModel->where('start_time <=', $timeValue)
+                                            ->where('end_time >=', $timeValue)
+                                            ->first();
+
+                        return $exam === null;
                     }
                 ],
                 'errors' => [
-                    2 => 'Waktu Mulai tidak berformat dengan benar.'
-                ]
-            ],
-            'start_time' => [
-                'label' => 'Waktu Mulai',
-                'rules' => [
-                    'required', 'string',
-                    static function (string $value, array $data, ?string &$error): bool {
-                        $format = 'Y-m-d\TH:i';
-
-                        $d = \DateTime::createFromFormat($format, $value);
-
-                        return $d && $d->format($format) === $value;
-                    },
-                ],
-                'errors' => [
                     2 => 'Waktu Mulai tidak berformat dengan benar.',
+                    3 => 'Waktu Mulai bentrok dengan waktu ujian lain.'
                 ]
             ],
             'end_time' => [
-                'label' => 'Waktu Mulai',
+                'label' => 'Waktu Selesai',
                 'rules' => [
                     'required', 'string',
                     static function (string $value, array $data, ?string &$error): bool {
@@ -526,7 +522,7 @@ class Exam extends BaseController
 
                         return $d && $d->format($format) === $value;
                     },
-                    static function (string $value, array $data, ?string &$error) {
+                    static function (string $value, array $data, ?string &$error): bool {
                         $format = 'Y-m-d\TH:i';
 
                         $d = \DateTime::createFromFormat($format, $data['start_time']);
@@ -536,11 +532,23 @@ class Exam extends BaseController
                         }
 
                         return strtotime($value) > strtotime($data['start_time']);
+                    },
+                    static function ($value): bool {
+                        $timeValue = strtotime($value);
+
+                        $examModel = model('ExamModel');
+
+                        $exam = $examModel->where('start_time <=', $timeValue)
+                                            ->where('end_time >=', $timeValue)
+                                            ->first();
+
+                        return $exam === null;
                     }
                 ],
                 'errors' => [
                     2 => 'Waktu Selesai tidak berformat dengan benar.',
                     3 => 'Waktu Selesai harus lebih besar dari Waktu Mulai.',
+                    4 => 'Waktu Selesai bentrok dengan waktu ujian lain.'
                 ]
             ],
         ];
@@ -608,7 +616,7 @@ class Exam extends BaseController
                 'label' => 'Judul',
                 'rules' => [
                     'required', 'string',
-                    'max_length[255]',
+                    'max_length[100]',
                     static function (string $value, array $data, ?string &$error) use ($controller, $id): bool {
                         $examModel = model('ExamModel');
 
@@ -629,36 +637,37 @@ class Exam extends BaseController
                 'label' => 'Waktu Mulai',
                 'rules' => [
                     'required', 'string',
-                    static function ($value) {
-                        $format = 'Y-m-d\TH:i';
-
-                        $d = \DateTime::createFromFormat($format, $value);
-
-                        return $d && $d->format($format) === $value;
-                    }
-                ],
-                'errors' => [
-                    2 => 'Waktu Mulai tidak berformat dengan benar.'
-                ]
-            ],
-            'start_time' => [
-                'label' => 'Waktu Mulai',
-                'rules' => [
-                    'required', 'string',
                     static function (string $value, array $data, ?string &$error): bool {
                         $format = 'Y-m-d\TH:i';
 
                         $d = \DateTime::createFromFormat($format, $value);
 
-                        return $d && $d->format($format) === $value;
+                        if ($d && $d->format($format) !== $value) {
+                            $error = 'Waktu Mulai tidak berformat dengan benar';
+
+                            return false;
+                        }
+
+                        $timeValue = strtotime($value);
+
+                        $examModel = model('ExamModel');
+
+                        $exam = $examModel->where('start_time <=', $timeValue)
+                                            ->where('end_time >=', $timeValue)
+                                            ->first();
+
+                        if ($exam !== null) {
+                            $error = 'Waktu Mulai bentrok dengan waktu ujian lain.';
+
+                            return false;
+                        }
+
+                        return true;
                     },
                 ],
-                'errors' => [
-                    2 => 'Waktu Mulai tidak berformat dengan benar.',
-                ]
             ],
             'end_time' => [
-                'label' => 'Waktu Mulai',
+                'label' => 'Waktu Selesai',
                 'rules' => [
                     'required', 'string',
                     static function (string $value, array $data, ?string &$error): bool {
@@ -678,11 +687,23 @@ class Exam extends BaseController
                         }
 
                         return strtotime($value) > strtotime($data['start_time']);
+                    },
+                    static function ($value): bool {
+                        $timeValue = strtotime($value);
+
+                        $examModel = model('ExamModel');
+
+                        $exam = $examModel->where('start_time <=', $timeValue)
+                                            ->where('end_time >=', $timeValue)
+                                            ->first();
+
+                        return $exam === null;
                     }
                 ],
                 'errors' => [
                     2 => 'Waktu Selesai tidak berformat dengan benar.',
                     3 => 'Waktu Selesai harus lebih besar dari Waktu Mulai.',
+                    4 => 'Waktu Selesai bentrok dengan waktu ujian lain.'
                 ]
             ],
         ];

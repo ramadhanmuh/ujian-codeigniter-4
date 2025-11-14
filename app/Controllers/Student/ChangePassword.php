@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers\Teacher;
+namespace App\Controllers\Student;
 
 use App\Controllers\BaseController;
 
@@ -12,7 +12,7 @@ class ChangePassword extends BaseController
 
         $data['application'] = $applicationModel->first();
 
-        return view('teacher/change_password', $data);
+        return view('student/change_password', $data);
     }
 
     public function update()
@@ -47,7 +47,7 @@ class ChangePassword extends BaseController
                 ],
                 'errors' => [
                     2 => '{field} harus berisi kata sandi yang digunakan saat ini.'
-                ],
+                ]
             ],
         ];
 
@@ -65,7 +65,7 @@ class ChangePassword extends BaseController
                     ])
                     ->update();
 
-        return redirect('teacher.change-password.edit')
+        return redirect('student.change-password.edit')
                 ->with('success', 'Berhasil mengubah kata sandi.');
     }
 }

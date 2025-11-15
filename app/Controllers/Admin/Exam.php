@@ -504,7 +504,7 @@ class Exam extends BaseController
                                             ->first();
 
                         return $exam === null;
-                    }
+                    },
                 ],
                 'errors' => [
                     2 => 'Waktu Mulai tidak berformat dengan benar.',
@@ -543,12 +543,22 @@ class Exam extends BaseController
                                             ->first();
 
                         return $exam === null;
-                    }
+                    },
+                    static function ($value, $data, &$error): bool {
+                        $startTime = strtotime($data['start_time']);
+
+                        if (!$startTime) {
+                            return true;
+                        }
+
+                        return strtotime($value) - $startTime <= 86400;
+                    },
                 ],
                 'errors' => [
                     2 => 'Waktu Selesai tidak berformat dengan benar.',
                     3 => 'Waktu Selesai harus lebih besar dari Waktu Mulai.',
-                    4 => 'Waktu Selesai bentrok dengan waktu ujian lain.'
+                    4 => 'Waktu Selesai bentrok dengan waktu ujian lain.',
+                    5 => 'Lama Waktu Ujian harus kurang dari atau sama dengan 24 jam.',
                 ]
             ],
         ];
@@ -637,7 +647,7 @@ class Exam extends BaseController
                 'label' => 'Waktu Mulai',
                 'rules' => [
                     'required', 'string',
-                    static function (string $value, array $data, ?string &$error): bool {
+                    static function (string $value, array $data, ?string &$error) use ($id): bool {
                         $format = 'Y-m-d\TH:i';
 
                         $d = \DateTime::createFromFormat($format, $value);
@@ -654,6 +664,7 @@ class Exam extends BaseController
 
                         $exam = $examModel->where('start_time <=', $timeValue)
                                             ->where('end_time >=', $timeValue)
+                                            ->where('id !=', $id)
                                             ->first();
 
                         if ($exam !== null) {
@@ -688,22 +699,33 @@ class Exam extends BaseController
 
                         return strtotime($value) > strtotime($data['start_time']);
                     },
-                    static function ($value): bool {
+                    static function ($value) use ($id): bool {
                         $timeValue = strtotime($value);
 
                         $examModel = model('ExamModel');
 
                         $exam = $examModel->where('start_time <=', $timeValue)
                                             ->where('end_time >=', $timeValue)
+                                            ->where('id !=', $id)
                                             ->first();
 
                         return $exam === null;
-                    }
+                    },
+                    static function ($value, $data, &$error): bool {
+                        $startTime = strtotime($data['start_time']);
+
+                        if (!$startTime) {
+                            return true;
+                        }
+
+                        return strtotime($value) - $startTime <= 86400;
+                    },
                 ],
                 'errors' => [
                     2 => 'Waktu Selesai tidak berformat dengan benar.',
                     3 => 'Waktu Selesai harus lebih besar dari Waktu Mulai.',
-                    4 => 'Waktu Selesai bentrok dengan waktu ujian lain.'
+                    4 => 'Waktu Selesai bentrok dengan waktu ujian lain.',
+                    5 => 'Lama Waktu Ujian harus kurang dari atau sama dengan 24 jam.',
                 ]
             ],
         ];

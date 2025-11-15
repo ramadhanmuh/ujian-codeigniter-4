@@ -40,21 +40,23 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header border-bottom">
+                <div class="card-header border-bottom text-center">
                     <h1 class="h3 text-center">
                         <?= esc($question['title']) ?>
                     </h1>
+                    <div id="timer" data-endtime="<?= date('Y-m-d H:i:s', $question['end_time']) ?>"></div>
                 </div>
                 <div class="card-body py-2">
                     <div class="row">
-                        <div class="col-xl-9 order-1 order-xl-0">
+                        <div class="col-xl-9    order-1 order-xl-0">
                             <h2 class="h5">Pertanyaan</h2>
-                            <div class="row">
+                            <form class="row" method="post">
+                                <?= csrf_field() ?>
                                 <div class="col-auto">
                                     <?= $question['number'] ?>
                                 </div>
                                 <div class="col">
-                                    <div class="row">
+                                    <div class="row mb-3">
                                         <div class="col-12">
                                             <?= esc($question['text']) ?>
                                         </div>  
@@ -69,7 +71,14 @@
                                                     <?= $question['selected_option'] === 'a' ? 'checked' : '' ?>
                                                 >
                                                 <label for="selected_option_1" class="form-check-label">
-                                                    A. <?= esc($question['option_a']) ?>
+                                                    <div class="row">
+                                                        <div class="col-auto pe-1">
+                                                            A.
+                                                        </div>
+                                                        <div class="col ps-1">
+                                                            <?= esc($question['option_a']) ?>
+                                                        </div>
+                                                    </div>
                                                 </label>
                                             </div>
                                         </div>
@@ -84,7 +93,14 @@
                                                     <?= $question['selected_option'] === 'b' ? 'checked' : '' ?>
                                                 >
                                                 <label for="selected_option_2" class="form-check-label">
-                                                    B. <?= esc($question['option_b']) ?>
+                                                    <div class="row">
+                                                        <div class="col-auto pe-1">
+                                                            B.
+                                                        </div>
+                                                        <div class="col ps-1">
+                                                            <?= esc($question['option_b']) ?>
+                                                        </div>
+                                                    </div>
                                                 </label>
                                             </div>
                                         </div>
@@ -99,7 +115,14 @@
                                                     <?= $question['selected_option'] === 'c' ? 'checked' : '' ?>
                                                 >
                                                 <label for="selected_option_3" class="form-check-label">
-                                                    C. <?= esc($question['option_c']) ?>
+                                                    <div class="row">
+                                                        <div class="col-auto pe-1">
+                                                            C.
+                                                        </div>
+                                                        <div class="col ps-1">
+                                                            <?= esc($question['option_c']) ?>
+                                                        </div>
+                                                    </div>
                                                 </label>
                                             </div>
                                         </div>
@@ -114,28 +137,69 @@
                                                     <?= $question['selected_option'] === 'd' ? 'checked' : '' ?>
                                                 >
                                                 <label for="selected_option_4" class="form-check-label">
-                                                    D. <?= esc($question['option_d']) ?>
+                                                    <div class="row">
+                                                        <div class="col-auto pe-1">
+                                                            D.
+                                                        </div>
+                                                        <div class="col ps-1">
+                                                            <?= esc($question['option_d']) ?>
+                                                        </div>
+                                                    </div>
                                                 </label>
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="row">
+                                        <div class="col-xl-auto <?= $question['number'] > 1 || $question['number'] != $maxNumber ? 'mb-2 mb-xl-0' : '' ?>">
+                                            <button type="submit" class="btn btn-primary">
+                                                Simpan Jawaban
+                                            </button>
+                                        </div>
+                                        <?php if ($question['number'] > 1) : ?>
+                                            <div class="col-xl-auto <?= $question['number'] != $maxNumber ? 'mb-2 mb-xl-0' : '' ?>">
+                                                <a href="<?= url_to('student.start-exam.create', $question['slug'], $question['number'] - 1) ?>" class="btn btn-outline-primary">
+                                                    Nomor Sebelumnya
+                                                </a>
+                                            </div>
+                                        <?php endif ?>
+                                        <?php if ($question['number'] != $maxNumber) : ?>
+                                            <div class="col-xl-auto mb-2 mb-xl-0">
+                                                <a href="<?= url_to('student.start-exam.create', $question['slug'], $question['number'] + 1) ?>" class="btn btn-outline-primary">
+                                                    Nomor Selanjutnya
+                                                </a>
+                                            </div>
+                                        <?php endif ?>
+                                    </div>
                                 </div>
-                            </div>
+                            </form>
                         </div>
                         <div class="col-xl-3 order-0 order-xl-1 mb-5 mb-xl-0 bg-light">
                             <h2 class="h5">Nomor Soal</h2>
-                            <?php for ($i=1; $i < $maxNumber; $i++) : ?>
-                                <a
-                                    href="<?= url_to('student.start-exam.create', $question['slug'], $question['number']) ?>"
-                                    class="btn btn-sm <?= $i == $question['number'] ? 'btn-primary' : 'btn-outline-primary' ?> m-1"
-                                >
-                                    <?= $i ?>
-                                </a>
-                            <?php endfor ?>
+                            <div class="mb-3">
+                                <?php for ($i=1; $i < $maxNumber; $i++) : ?>
+                                    <a
+                                        href="<?= url_to('student.start-exam.create', $question['slug'], $question['number']) ?>"
+                                        class="btn btn-sm <?= $i == $question['number'] ? 'btn-primary' : 'btn-outline-primary' ?> m-1"
+                                    >
+                                        <?= $i ?>
+                                    </a>
+                                <?php endfor ?>
+                            </div>
+
+                            <form action="<?= url_to('student.start-exam.finish', $question['slug']) ?>" method="post">
+                                <?= csrf_field() ?>
+                                <button type="submit" class="btn btn-success">
+                                    Selesaikan Ujian
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+<?= $this->endSection() ?>
+
+<?= $this->section('additional_script') ?>
+    <script defer src="<?= base_url('assets/js/student/start-exam/create.js') ?>"></script>
 <?= $this->endSection() ?>

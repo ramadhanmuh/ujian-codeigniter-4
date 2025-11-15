@@ -62,5 +62,7 @@
     <!-- / Layout wrapper -->
 
     <?= $this->include('student/script') ?>
+
+    <?= $this->renderSection('additional_script') ?>
   </body>
 </html>

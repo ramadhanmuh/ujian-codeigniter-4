@@ -116,6 +116,7 @@ $routes->group('murid', ['filter' => 'rolecheck:student'], static function ($rou
         $routes->get('/', 'Student\StartExam::index', ['as' => 'student.start-exam.index']);
         $routes->get('(:segment)/(:segment)', 'Student\StartExam::create/$1/$2', ['as' => 'student.start-exam.create']);
         $routes->post('(:segment)/(:segment)', 'Student\StartExam::store/$1/$2', ['as' => 'student.start-exam.store']);
+        $routes->post('(:segment)', 'Student\StartExam:Finish/$1', ['as' => 'student.start-exam.finish']);
     });
 });
 

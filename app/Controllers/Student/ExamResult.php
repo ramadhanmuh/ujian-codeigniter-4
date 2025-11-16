@@ -29,7 +29,8 @@ class ExamResult extends BaseController
         $examResultModel = model('ExamResultModel');
 
         $data['records'] = $examResultModel->select('exam_results.score, exams.title, exams.start_time, exams.end_time')
-                                            ->join('exams', 'exams.id = exam_results.exam_id', 'inner');
+                                            ->join('exams', 'exams.id = exam_results.exam_id', 'inner')
+                                            ->where('exam_results.user_id', session('user')['id']);
 
         if ($data['keyword'] !== '') {
             $data['records'] = $data['records']->like('exams.title', $data['keyword']);
@@ -39,7 +40,8 @@ class ExamResult extends BaseController
                                             ->findAll($limit, $data['offset']);
 
         $data['totalRecords'] = $examResultModel->select('exam_results.id')
-                                                ->join('exams', 'exams.id = exam_results.exam_id', 'inner');
+                                                ->join('exams', 'exams.id = exam_results.exam_id', 'inner')
+                                                ->where('exam_results.user_id', session('user')['id']);
 
         if ($data['keyword'] !== '') {
             $data['totalRecords'] = $data['totalRecords']->like('exams.title', $data['keyword']);

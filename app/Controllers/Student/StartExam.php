@@ -277,6 +277,6 @@ class StartExam extends BaseController
         ]);
 
         return redirect('student.exam-results.index')
-                ->with('success', 'Berhasil membuat hasil ujian.');
+                ->with('success', 'Berhasil memproses hasil ujian.');
     }
 }

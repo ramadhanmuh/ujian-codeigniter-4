@@ -14,7 +14,7 @@
                 <a class="nav-link" href="<?= url_to('student.start-exam.index') ?>">Mulai Ujian</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Hasil Ujian</a>
+                <a class="nav-link" href="<?= url_to('student.exam-results.index') ?>">Hasil Ujian</a>
             </li>
         </ul>
 

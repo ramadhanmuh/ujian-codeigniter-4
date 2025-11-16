@@ -114,9 +114,13 @@ $routes->group('murid', ['filter' => 'rolecheck:student'], static function ($rou
 
     $routes->group('mulai-ujian', static function ($routes) {
         $routes->get('/', 'Student\StartExam::index', ['as' => 'student.start-exam.index']);
+        $routes->post('(:segment)/selesai', 'Student\StartExam::finish/$1', ['as' => 'student.start-exam.finish']);
         $routes->get('(:segment)/(:segment)', 'Student\StartExam::create/$1/$2', ['as' => 'student.start-exam.create']);
         $routes->post('(:segment)/(:segment)', 'Student\StartExam::store/$1/$2', ['as' => 'student.start-exam.store']);
-        $routes->post('(:segment)', 'Student\StartExam:Finish/$1', ['as' => 'student.start-exam.finish']);
+    });
+
+    $routes->group('hasil-ujian', static function ($routes) {
+         $routes->get('/', 'Student\ExamResult::index', ['as' => 'student.exam-results.index']);
     });
 });
 

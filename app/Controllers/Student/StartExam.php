@@ -22,6 +22,18 @@ class StartExam extends BaseController
                     ->with('info', 'Ujian tidak ditemukan.');
         }
 
+        $examResultModel = model('ExamResultModel');
+
+        $examResultData = $examResultModel->select('id')
+                                            ->where('user_id', session('user')['id'])
+                                            ->where('exam_id', $examData['id'])
+                                            ->first();
+
+        if ($examResultData !== null) {
+            return redirect('student.exam-results.index')
+                    ->with('info', 'Ujian telah diselesaikan.');
+        }
+
         $questionModel = model('QuestionModel');
 
         $questionData = $questionModel->select('id')
@@ -35,18 +47,6 @@ class StartExam extends BaseController
         }
 
         $studentQuestionModel = model('StudentQuestionModel');
-
-        $studentQuestionData = $studentQuestionModel
-                                ->join('questions', 'questions.id = student_questions.question_id', 'inner')
-                                ->where('student_questions.user_id', session('user')['id'])
-                                ->where('questions.exam_id', $examData['id'])
-                                ->where('student_questions.selected_option IS NULL', null, false)
-                                ->first();
-
-        if ($studentQuestionData === null) {
-            return redirect('student.home.index')
-                    ->with('error', 'Ujian sudah diselesaikan.');
-        }
 
         $studentQuestionData = $studentQuestionModel
                                 ->select('id')
@@ -96,8 +96,7 @@ class StartExam extends BaseController
                                             ->first();
 
         if ($data['question'] === null) {
-            return redirect()
-                    ->back()
+            return redirect('student.home.index')
                     ->with('error', 'Soal tidak ditemukan.');
         }
 
@@ -186,14 +185,98 @@ class StartExam extends BaseController
                     ->withInput();
         }
 
-        $input = $this->validator->getValidated();
-
         $studentQuestionModel->where('question_id', $question['question_id'])
                             ->where('number', $number)
+                            ->limit(1)
                             ->set($this->validator->getValidated())
                             ->update();
 
         return redirect()->back()
                             ->with('success', 'Berhasil menyimpan jawaban.');
+    }
+
+    public function finish($slug) {
+        $now = time();
+
+        $examModel = model('ExamModel');
+
+        $examData = $examModel->select('id')
+                                ->where('slug', $slug)
+                                ->where('start_time <=', $now)
+                                ->where('end_time >=', $now)
+                                ->first();
+
+        if ($examData === null) {
+            return redirect('student.home.index')
+                    ->with('error', 'Ujian tidak ditemukan.');
+        }
+
+        $validationRules = [
+            'id' => [
+                'label' => 'Id',
+                'rules' => [
+                    'required', 'string',
+                    'regex_match[/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/]',
+                    'is_unique[exam_results.id]'
+                ]
+            ],
+        ];
+
+        if (!$this->validate($validationRules)) {
+            return redirect()
+                    ->back()
+                    ->with('validationError', $this->validator->getErrors())
+                    ->withInput();
+        }
+
+        $questionModel = model('QuestionModel');
+
+        $questionData = $questionModel
+                        ->select('questions.id, questions.correct_answer')
+                        ->join('exams', 'exams.id = questions.exam_id', 'inner')
+                        ->where('slug', $slug)
+                        ->findAll();
+
+        $studentQuestionModel = model('StudentQuestionModel');
+
+        $studentQuestionData = $studentQuestionModel
+                                ->select('student_questions.question_id, student_questions.selected_option')
+                                ->join('questions', 'questions.id = student_questions.question_id', 'inner')
+                                ->join('exams', 'exams.id = questions.exam_id', 'inner')
+                                ->where('exams.slug', $slug)
+                                ->where('student_questions.user_id', session('user')['id'])
+                                ->findAll();
+
+        $correctAnswer = 0;
+
+        $questionTotal = count($questionData);
+
+        foreach ($questionData as $question) {
+            foreach ($studentQuestionData as $studentQuestion) {
+                if ($question['id'] === $studentQuestion['question_id']) {
+                    if ($studentQuestion['selected_option'] === null) {
+                        continue;
+                    }
+
+                    if ($studentQuestion['selected_option'] === $question['correct_answer']) {
+                        $correctAnswer++;
+                    }
+                }
+            }
+        }
+
+        $score = round(($correctAnswer / $questionTotal) * 100, 2);
+
+        $examResultModel = model('ExamResultModel');
+
+        $examResultModel->insert([
+            'id' => $this->request->getPost('id'),
+            'user_id' => session('user')['id'],
+            'exam_id' => $examData['id'],
+            'score' => $score,
+        ]);
+
+        return redirect('student.exam-results.index')
+                ->with('success', 'Berhasil membuat hasil ujian.');
     }
 }

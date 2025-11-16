@@ -176,9 +176,9 @@
                         <div class="col-xl-3 order-0 order-xl-1 mb-5 mb-xl-0 bg-light">
                             <h2 class="h5">Nomor Soal</h2>
                             <div class="mb-3">
-                                <?php for ($i=1; $i < $maxNumber; $i++) : ?>
+                                <?php for ($i=1; $i <= $maxNumber; $i++) : ?>
                                     <a
-                                        href="<?= url_to('student.start-exam.create', $question['slug'], $question['number']) ?>"
+                                        href="<?= url_to('student.start-exam.create', $question['slug'], $i) ?>"
                                         class="btn btn-sm <?= $i == $question['number'] ? 'btn-primary' : 'btn-outline-primary' ?> m-1"
                                     >
                                         <?= $i ?>
@@ -188,7 +188,8 @@
 
                             <form action="<?= url_to('student.start-exam.finish', $question['slug']) ?>" method="post">
                                 <?= csrf_field() ?>
-                                <button type="submit" class="btn btn-success">
+                                <input type="hidden" name="id" value="<?= generate_uuid() ?>">
+                                <button type="submit" class="btn btn-success" onclick="return confirm('Apakah anda yakin ingin menyelesaikan ujian ?')">
                                     Selesaikan Ujian
                                 </button>
                             </form>

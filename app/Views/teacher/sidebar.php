@@ -27,7 +27,7 @@
         </li>
 
         <li class="menu-item <?= active_menu('guru/hasil-ujian') ?>">
-            <a href="<?= url_to('admin.exams.index') ?>" class="menu-link">
+            <a href="<?= url_to('teacher.exam-results.index') ?>" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-check-circle"></i>
                 <div>Hasil Ujian</div>
             </a>

@@ -94,6 +94,8 @@ $routes->group('guru', ['filter' => 'rolecheck:teacher'], static function ($rout
         $routes->post('(:segment)/ubah', 'Teacher\Question::update/$1', ['as' => 'teacher.questions.update']);
         $routes->post('(:segment)/hapus', 'Teacher\Question::delete/$1', ['as' => 'teacher.questions.delete']);
     });
+
+    $routes->get('hasil-ujian', 'Teacher\ExamResult::index', ['as' => 'teacher.exam-results.index']);
 });
 
 $routes->group('murid', ['filter' => 'rolecheck:student'], static function ($routes) {

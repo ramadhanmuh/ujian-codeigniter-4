@@ -44,7 +44,7 @@
                                 <label for="order" class="form-label">
                                     Sortir
                                 </label>
-                                <select id="order" class="form-select">
+                                <select id="order" class="form-select" data-url="<?= url_to('teacher.exam-results.index') ?>">
                                     <option
                                         data-order="student"
                                         data-direction="asc"
@@ -79,7 +79,7 @@
                                 <label for="exam_id" class="form-label">
                                     Ujian
                                 </label>
-                                <select id="exam_id" class="form-select">
+                                <select id="exam_id" class="form-select" data-url="<?= url_to('teacher.exam-results.index') ?>">
                                     <option value="">-- Pilih --</option>
                                     <?php if (empty($exams)) : ?>
                                         <option value="">Ujian Tidak Ditemukan</option>
@@ -98,7 +98,7 @@
                             <div class="col-xl-4">
                                 <form action="" method="get" id="searchForm">
                                     <?php if ($orderBy !== '' && $direction !== '') : ?>
-                                        <input type="hidden" name="order_by" value="<?= $orderBy ?>">
+                                        <input type="hidden" name="orderBy" value="<?= $orderBy ?>">
                                         <input type="hidden" name="direction" value="<?= $direction ?>">
                                     <?php endif ?>
 
@@ -115,7 +115,8 @@
                                             class="form-control"
                                             name="keyword"
                                             id="keyword"
-                                            placeholder="Ketikkan "
+                                            placeholder="Ketikkan murid atau ujian..."
+                                            value="<?= $keyword ?>"
                                         >
                                         <button type="submit" class="btn btn-outline-primary">
                                             <i class="bx bx-search"></i>
@@ -193,3 +194,7 @@
         </div>
     </div>
 <?= $this->endSection() ?>
+
+<?= $this->section('additional_script') ?>
+    <script defer src="<?= base_url('assets/js/teacher/exam-result/index.js') ?>?>"></script>
+<?= $this->endSection()  ?>?>

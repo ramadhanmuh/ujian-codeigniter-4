@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 28, 2025 at 09:36 AM
+-- Generation Time: Nov 24, 2025 at 11:14 AM
 -- Server version: 10.4.27-MariaDB
 -- PHP Version: 8.2.0
 
@@ -38,7 +38,7 @@ CREATE TABLE `applications` (
 --
 
 INSERT INTO `applications` (`id`, `name`, `copyright`) VALUES
-('a7e40b01-6da2-458c-8d88-2474689de0dd', 'Ujian', 'Ujian 2025');
+('a7e40b01-6da2-458c-8d88-2474689de0dd', 'Ujian App', 'Ujian 2025');
 
 -- --------------------------------------------------------
 
@@ -93,7 +93,7 @@ CREATE TABLE `questions` (
   `option_b` text NOT NULL,
   `option_c` text NOT NULL,
   `option_d` text NOT NULL,
-  `corrent_answer` enum('a','b','c','d') NOT NULL
+  `correct_answer` enum('a','b','c','d') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -131,7 +131,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `full_name`, `username`, `email`, `password`, `role`, `remember_token`) VALUES
-('b0bf204d-9621-498a-aae5-3a834d509419', 'John Doe', 'admin', 'admin@gmail.com', '$2y$10$94/e4wvQQ8KEytCSCBSh2u4WIyYWyQrlckUG3oChYqX99IpTrDLQ2', 'admin', NULL);
+('b0bf204d-9621-498a-aae5-3a834d509419', 'John Doe', 'admin', 'admin@gmail.com', '$2y$10$NGQcY9miMIYraGbW6VP/Me/jzdZW4m.zzMc6zLIlNSHuy83UihdWO', 'admin', 'f09137f299b0c075e312962110a14e7d');
 
 --
 -- Indexes for dumped tables
@@ -155,7 +155,7 @@ ALTER TABLE `exams`
 --
 ALTER TABLE `exam_results`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`),
+  ADD UNIQUE KEY `user_id` (`user_id`,`exam_id`),
   ADD KEY `exam_id` (`exam_id`);
 
 --

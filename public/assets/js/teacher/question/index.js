@@ -163,6 +163,8 @@ $(document).ready(function () {
     var direction = $('#order').find(':selected').data('direction')
 
     var examId = $('#exam_id').find(':selected').val()
+
+    var createButtonDisabled = true
     
     var keyword = $('#keyword').val()
 
@@ -333,7 +335,13 @@ $(document).ready(function () {
                     $('#question-total-column').after(paginationHTML);
                 }
 
-                setURLToCreateButton()
+                if (response.hasStarted) {
+                  createButtonDisabled = true
+                } else {
+                  createButtonDisabled = false
+                }
+
+                setCreateButton()
             },
             error: function (xhr, status, error) {
                 console.log(error)
@@ -341,11 +349,17 @@ $(document).ready(function () {
         })   
     }
 
-    function setURLToCreateButton() {
+    function setCreateButton() {
         $('#createButton').attr(
             'href',
             $('#createButton').data('link') + '?exam_id=' + examId
         )
+
+        if (createButtonDisabled) {
+          $('#createButton').addClass('disabled')
+        } else {
+          $('#createButton').removeClass('disabled')
+        }
     }
 
     getData()

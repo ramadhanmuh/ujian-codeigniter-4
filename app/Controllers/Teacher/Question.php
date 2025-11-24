@@ -67,14 +67,20 @@ class Question extends BaseController
         $response['records'] = $response['records']->orderBy($orderBy, $direction)
                                                     ->findAll($limit, $offset);
 
+        $examModel = model('ExamModel');
+
+        $exam = $examModel->select('id')
+                            ->where('id', $examId)
+                            ->where('start_time >', time())
+                            ->first();
+
+        if ($exam === null) {
+            $response['hasStarted'] = true;
+        } else {
+            $response['hasStarted'] = false;
+        }
+
         if (!empty($response['records'])) {
-            $examModel = model('ExamModel');
-
-            $exam = $examModel->select('id')
-                                ->where('id', $examId)
-                                ->where('start_time >', time())
-                                ->first();
-
             foreach ($response['records'] as $key => $value) {
                 $offset++;
 

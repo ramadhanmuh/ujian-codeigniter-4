@@ -432,6 +432,7 @@ class Question extends BaseController
         $examModel = model('examModel');
 
         $data['exam'] = $examModel->select('title')
+                                    ->where('start_time >', time())
                                     ->limit(1)
                                     ->find($examId);
 
@@ -454,6 +455,7 @@ class Question extends BaseController
         $examModel = model('examModel');
 
         $exam = $examModel->select('title')
+                                    ->where('start_time >', time())
                                     ->limit(1)
                                     ->find($examId);
 

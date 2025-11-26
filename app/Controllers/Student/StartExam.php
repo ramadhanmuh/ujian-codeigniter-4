@@ -114,6 +114,18 @@ class StartExam extends BaseController
                     ->with('error', 'Ujian sudah diselesaikan.');
         }
 
+        $examResultModel = model('ExamResultModel');
+
+        $examResultData = $examResultModel->select('id')
+                                            ->where('user_id', session('user')['id'])
+                                            ->where('exam_id', $data['question']['exam_id'])
+                                            ->first();
+
+        if ($examResultData !== null) {
+            return redirect('student.exam-results.index')
+                    ->with('info', 'Ujian telah diselesaikan.');
+        }
+
         $data['maxNumber'] = $studentQuestionModel->select('student_questions.number')
                                                     ->join('questions', 'questions.id = student_questions.question_id', 'inner')
                                                     ->join('exams', 'exams.id = questions.exam_id', 'inner')
@@ -151,6 +163,18 @@ class StartExam extends BaseController
             return redirect()
                     ->back()
                     ->with('error', 'Soal tidak ditemukan.');
+        }
+
+        $examResultModel = model('ExamResultModel');
+
+        $examResultData = $examResultModel->select('id')
+                                            ->where('user_id', session('user')['id'])
+                                            ->where('exam_id', $question['exam_id'])
+                                            ->first();
+
+        if ($examResultData !== null) {
+            return redirect('student.exam-results.index')
+                    ->with('info', 'Ujian telah diselesaikan.');
         }
 
         $studentQuestionModel = model('StudentQuestionModel');
@@ -209,6 +233,18 @@ class StartExam extends BaseController
         if ($examData === null) {
             return redirect('student.home.index')
                     ->with('error', 'Ujian tidak ditemukan.');
+        }
+
+        $examResultModel = model('ExamResultModel');
+
+        $examResultData = $examResultModel->select('id')
+                                            ->where('user_id', session('user')['id'])
+                                            ->where('exam_id', $examData['id'])
+                                            ->first();
+
+        if ($examResultData !== null) {
+            return redirect('student.exam-results.index')
+                    ->with('info', 'Ujian telah diselesaikan.');
         }
 
         $validationRules = [

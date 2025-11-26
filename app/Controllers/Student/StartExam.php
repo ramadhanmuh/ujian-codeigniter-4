@@ -100,20 +100,6 @@ class StartExam extends BaseController
                     ->with('error', 'Soal tidak ditemukan.');
         }
 
-        $studentQuestionModel = model('StudentQuestionModel');
-
-        $data['studentQuestionData'] = $studentQuestionModel
-                                        ->join('questions', 'questions.id = student_questions.question_id', 'inner')
-                                        ->where('student_questions.user_id', session('user')['id'])
-                                        ->where('questions.exam_id', $data['question']['exam_id'])
-                                        ->where('student_questions.selected_option IS NULL', null, false)
-                                        ->findAll();
-
-        if ($data['studentQuestionData'] === null) {
-            return redirect('student.home.index')
-                    ->with('error', 'Ujian sudah diselesaikan.');
-        }
-
         $examResultModel = model('ExamResultModel');
 
         $examResultData = $examResultModel->select('id')
@@ -125,6 +111,8 @@ class StartExam extends BaseController
             return redirect('student.exam-results.index')
                     ->with('info', 'Ujian telah diselesaikan.');
         }
+
+        $studentQuestionModel = model('StudentQuestionModel');
 
         $data['maxNumber'] = $studentQuestionModel->select('student_questions.number')
                                                     ->join('questions', 'questions.id = student_questions.question_id', 'inner')
